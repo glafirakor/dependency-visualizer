@@ -41,3 +41,25 @@ def format_graph(graph):
 def format_cycle(cycle):
 	"""Вернуть цикл в виде строки 'A -> B -> A'."""
 	return " -> ".join(cycle)
+
+
+def load_order(graph, root):
+	"""Вернуть порядок загрузки: зависимости раньше зависящих от них.
+
+	Это обратный (post-order) обход в глубину: пакет добавляется в список
+	только после всех своих зависимостей. Каждый пакет входит один раз.
+	"""
+	order = []
+	visited = set()
+
+	def visit(node):
+		"""Добавить пакет в порядок после всех его зависимостей."""
+		if node in visited:
+			return
+		visited.add(node)
+		for dep in graph.get(node, []):
+			visit(dep)
+		order.append(node)
+
+	visit(root)
+	return order

@@ -1,9 +1,9 @@
-"""Тесты построения графа и тестового репозитория (этап 3)."""
+"""Тесты графа, тестового репозитория и порядка загрузки (этапы 3-4)."""
 
 import os
 import unittest
 
-from graph import build_graph
+from graph import build_graph, load_order
 from repo_file import RepoFileError, load_repo_file
 
 REPOS = os.path.join(os.path.dirname(__file__), "repos")
@@ -63,6 +63,35 @@ class GraphTest(unittest.TestCase):
 		"""Для пакета из середины строится только его часть графа."""
 		graph, _ = graph_of("complex.txt", "C")
 		self.assertEqual(sorted(graph), ["C", "E", "F", "G", "H"])
+
+
+class LoadOrderTest(unittest.TestCase):
+	"""Проверки порядка загрузки зависимостей (этап 4)."""
+
+	def order_of(self, name, root="A"):
+		"""Вернуть порядок загрузки для тестового репозитория."""
+		graph, _ = graph_of(name, root)
+		return load_order(graph, root)
+
+	def test_chain(self):
+		"""В цепочке сначала загружается самый нижний пакет."""
+		self.assertEqual(self.order_of("simple.txt"), ["C", "B", "A"])
+
+	def test_diamond(self):
+		"""Общая зависимость загружается один раз и раньше всех."""
+		self.assertEqual(self.order_of("diamond.txt"), ["D", "B", "C", "A"])
+
+	def test_dependencies_first(self):
+		"""Каждый пакет идет после всех своих зависимостей."""
+		graph, _ = graph_of("complex.txt")
+		order = load_order(graph, "A")
+		for node, deps in graph.items():
+			for dep in deps:
+				self.assertLess(order.index(dep), order.index(node))
+
+	def test_cycle(self):
+		"""При циклах каждый пакет все равно входит один раз."""
+		self.assertEqual(self.order_of("cycle.txt"), ["C", "B", "D", "A"])
 
 
 if __name__ == "__main__":

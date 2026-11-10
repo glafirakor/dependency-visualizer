@@ -32,6 +32,9 @@ def build_parser():
 	parser.add_argument(
 		"--ascii-tree", action="store_true",
 		help="вывод зависимостей в формате ASCII-дерева")
+	parser.add_argument(
+		"--load-order", action="store_true",
+		help="вывести порядок загрузки зависимостей")
 	return parser
 
 
@@ -79,6 +82,7 @@ def load_config(argv=None):
 		"test_mode": args.test_mode,
 		"version": args.version,
 		"ascii_tree": args.ascii_tree,
+		"load_order": args.load_order,
 	}
 	checks = (
 		check_package(args.package, args.test_mode),
